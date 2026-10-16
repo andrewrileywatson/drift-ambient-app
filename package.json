@@ -1,0 +1,46 @@
+{
+  "name": "drift-ambient-instrument",
+  "productName": "DRIFT",
+  "version": "1.0.0",
+  "description": "A procedural ambient sound instrument with live audio input recording.",
+  "main": "main.cjs",
+  "author": "DRIFT",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist:mac": "electron-builder --mac dmg zip"
+  },
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "studio.drift.ambient",
+    "productName": "DRIFT",
+    "asar": true,
+    "files": [
+      "index.html",
+      "main.cjs",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.music",
+      "target": ["dmg", "zip"],
+      "icon": "assets/drift.icns",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "DRIFT needs microphone access to record audio from your selected input, such as the M-Audio M-Track 2X2."
+      }
+    },
+    "dmg": {
+      "title": "DRIFT Installer",
+      "contents": [
+        { "x": 160, "y": 220 },
+        { "x": 420, "y": 220, "type": "link", "path": "/Applications" }
+      ]
+    },
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    }
+  }
+}
