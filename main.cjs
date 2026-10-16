@@ -1,3 +1,4 @@
+
 const { app, BrowserWindow, session, systemPreferences } = require('electron');
 const path = require('node:path');
 
@@ -20,28 +21,44 @@ function createWindow() {
       autoplayPolicy: 'no-user-gesture-required'
     }
   });
+
   win.loadFile(path.join(__dirname, 'index.html'));
 }
 
-// Permit the renderer to ask for microphone access. macOS still presents its
-// normal system permission prompt, backed by NSMicrophoneUsageDescription.
-session.defaultSession.setPermissionCheckHandler((_webContents, permission) => {
-  return permission === 'media';
-});
-session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
-  if (permission !== 'media') return callback(false);
-  if (isMac && systemPreferences.getMediaAccessStatus('microphone') === 'denied') {
-    return callback(false);
-  }
-  callback(true);
-});
-
 app.whenReady().then(() => {
+  // Configure permissions only after Electron is ready.
+  const defaultSession = session.defaultSession;
+
+  defaultSession.setPermissionCheckHandler(
+    (_webContents, permission) => {
+      return permission === 'media';
+    }
+  );
+
+  defaultSession.setPermissionRequestHandler(
+    (_webContents, permission, callback) => {
+      if (permission !== 'media') return callback(false);
+
+      if (
+        isMac &&
+        systemPreferences.getMediaAccessStatus('microphone') === 'denied'
+      ) {
+        return callback(false);
+      }
+
+      callback(true);
+    }
+  );
+
   createWindow();
+
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
   });
 });
+
 app.on('window-all-closed', () => {
   if (!isMac) app.quit();
 });
