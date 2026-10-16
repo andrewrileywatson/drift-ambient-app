@@ -1,5 +1,4 @@
-
-name: Build DRIFT for Mac
+name: Build DRIFT Mac Installer
 
 on:
   workflow_dispatch:
