@@ -1,5 +1,11 @@
 
-const { app, BrowserWindow, session, systemPreferences } = require('electron');
+const {
+  app,
+  BrowserWindow,
+  session,
+  systemPreferences,
+  dialog
+} = require('electron');
 const path = require('node:path');
 
 const isMac = process.platform === 'darwin';
@@ -25,32 +31,44 @@ function createWindow() {
   win.loadFile(path.join(__dirname, 'index.html'));
 }
 
-app.whenReady().then(() => {
-  // Configure permissions only after Electron is ready.
+app.whenReady().then(async () => {
   const defaultSession = session.defaultSession;
 
   defaultSession.setPermissionCheckHandler(
-    (_webContents, permission) => {
-      return permission === 'media';
-    }
+    (_webContents, permission) => permission === 'media'
   );
 
   defaultSession.setPermissionRequestHandler(
     (_webContents, permission, callback) => {
       if (permission !== 'media') return callback(false);
-
-      if (
-        isMac &&
-        systemPreferences.getMediaAccessStatus('microphone') === 'denied'
-      ) {
-        return callback(false);
-      }
-
       callback(true);
     }
   );
 
   createWindow();
+
+  if (isMac) {
+    try {
+      const status = systemPreferences.getMediaAccessStatus('microphone');
+
+      if (status === 'not-determined') {
+        const granted =
+          await systemPreferences.askForMediaAccess('microphone');
+
+        if (!granted) {
+          dialog.showMessageBox({
+            type: 'warning',
+            title: 'Microphone access needed',
+            message: 'DRIFT needs microphone access to record live audio.',
+            detail:
+              'Open System Settings → Privacy & Security → Microphone and allow access for DRIFT, then reopen the app.'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Microphone permission request failed:', error);
+    }
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
