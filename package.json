@@ -26,6 +26,7 @@
     "mac": {
       "category": "public.app-category.music",
       "target": ["dmg", "zip"],
+      "arch": ["x64"]
       "icon": "assets/drift.icns",
       "extendInfo": {
         "NSMicrophoneUsageDescription": "DRIFT needs microphone access to record audio from your selected input, such as the M-Audio M-Track 2X2."
